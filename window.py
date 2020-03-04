@@ -1,6 +1,24 @@
 import pygame
 
 
+routes = [
+    [
+        (735, 50),
+        90,
+        (500, 50)
+    ],
+    [
+        (735, 50),
+        90,
+        (400, 50),
+        90,
+        (400, 150),
+        -90,
+        (250, 150)
+    ]
+]
+
+
 class Car(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -23,10 +41,24 @@ class Window(object):
         self._car = Car()
         self._sprites = pygame.sprite.Group()
         self._sprites.add(self._car)
+        self._current_customer = 0
+        self._progress = 0
         self._should_exit = False
 
     def loop(self):
         self._display.blit(self._background, (0, 0))
+        if self._car.rect.y > routes[self._current_customer][self._progress][1]:
+            self._car.rect.y -= 0.01
+            if self._car.rect.y <= routes[self._current_customer][self._progress][1]:
+                self._car.image = pygame.transform.rotate(self._car.image,
+                                                          routes[self._current_customer][self._progress + 1])
+                self._progress += 2
+        elif self._car.rect.x > routes[self._current_customer][self._progress][0]:
+            self._car.rect.x -= 0.01
+            if self._car.rect.x <= routes[self._current_customer][self._progress][0]:
+                self._car.image = pygame.transform.rotate(self._car.image,
+                                                          routes[self._current_customer][self._progress + 1])
+                self._progress += 2
         self._car.update()
         self._sprites.draw(self._display)
         pygame.display.flip()
