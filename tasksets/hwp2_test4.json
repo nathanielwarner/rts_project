@@ -1,0 +1,20 @@
+{
+    "startTime": 0,
+    "endTime": 12,
+    "taskset": [
+        {
+            "taskId": 1,
+            "period": 4,
+            "wcet": 2,
+            "deadline": 4,
+            "offset": 0
+        },
+        {
+            "taskId": 2,
+            "period": 2,
+            "wcet": 1,
+            "deadline": 2,
+            "offset": 0
+        }
+    ]
+}

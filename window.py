@@ -106,13 +106,13 @@ class Window(object):
         self._car.rotate_on_target = routes[0][1]
         self._sprites = pygame.sprite.Group()
         self._sprites.add(self._car)
-        self._current_customer = 0
+        self._current_customer = -1
         self._progress = 0
         self._going_back = False
         self._should_exit = False
 
     def _update_car(self):
-        if self._current_customer < len(routes):
+        if self._current_customer != -1:
             if self._car.target_reached:
                 self._car.target_reached = False
                 if self._going_back:
@@ -122,7 +122,6 @@ class Window(object):
                         self._car.target_y = self._car.store_y
                         self._car.rotate_on_target = 180
                         self._going_back = False
-                        self._current_customer += 1
                     else:
                         self._car.target_x = routes[self._current_customer][self._progress][0]
                         self._car.target_y = routes[self._current_customer][self._progress][1]
@@ -144,6 +143,20 @@ class Window(object):
                             self._car.rotate_on_target = 180
 
     def loop(self):
+        current_time = pygame.time.get_ticks()
+        self.clock += (current_time - self.last_time) * 0.001
+        for interval in self.schedule.intervals:
+            # print("%s %s %s" % (interval.startTime, self.clock, interval.endTime))
+            if interval.startTime < self.clock < interval.endTime:
+                self._current_customer = interval.taskId - 1
+                i_want_pizza = pygame.sprite.Sprite()
+                img = pygame.image.load("thought_bubble.png")
+                i_want_pizza.rect = img.get_rect()
+                i_want_pizza.rect.x = routes[self._current_customer][-1][0]
+                i_want_pizza.rect.y = routes[self._current_customer][-1][1]
+                i_want_pizza.image = img
+                self._sprites.add(i_want_pizza)
+        self.last_time = current_time
         self._update_car()
         self._display.blit(self._background, (0, 0))
         self._car.update()
@@ -157,18 +170,12 @@ class Window(object):
         if event.type == pygame.QUIT:
             self._should_exit = True
 
-    def execute(self):
+    def execute(self, schedule):
+        self.schedule = schedule
+        self.clock = 0
+        self.last_time = pygame.time.get_ticks()
         while not self._should_exit:
             for event in pygame.event.get():
                 self.handle_event(event)
             self.loop()
         self.cleanup()
-
-
-def main():
-    window = Window()
-    window.execute()
-
-
-if __name__ == "__main__":
-    main()
