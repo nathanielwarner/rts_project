@@ -36,10 +36,10 @@ routes = [
 
 
 def route_length(route):
-    length = 0
+    length = abs(route[0][0] - 735.0) + abs(route[0][1] - 180.0)
     for i in range(0, len(route) - 2, 2):
-        length += abs(route[i + 2][0] - route[i][0]) + abs(route[i + 2][1] - route[i][1])
-    return 2 * length + 1000
+        length += abs(route[i + 2][0] - route[i][0]) + abs(route[i + 2][1] - route[i][1]) + 5
+    return 2 * length
 
 
 class Car(pygame.sprite.Sprite):
@@ -79,7 +79,7 @@ class Car(pygame.sprite.Sprite):
 
     def update(self, *args):
         current_time = pygame.time.get_ticks()
-        adjusted_speed = self.speed * (current_time - self._last_time)
+        adjusted_speed = self.speed * (current_time - self._last_time) * time_multiplier
         self._last_time = current_time
         if not self.target_reached:
             if self.x > self.target_x:
@@ -123,6 +123,7 @@ class Window(object):
         self._progress = 0
         self._going_back = False
         self._should_exit = False
+        self.font = pygame.font.Font('freesansbold.ttf', 32)
 
     def _update_car(self):
         if self._current_customer != -1:
@@ -162,6 +163,17 @@ class Window(object):
         current_time = pygame.time.get_ticks()
         self.clock += (current_time - self.last_time) * time_multiplier
         for interval in self.schedule.intervals:
+            if interval.taskId != 0 and self.schedule.taskSet.tasks[interval.taskId].offset <= self.clock \
+                    and interval.taskId - 1 != self._current_customer\
+                    and interval.taskId - 1 not in self._finished_jobs:
+                i_want_pizza = pygame.sprite.Sprite()
+                img = pygame.image.load("thought_bubble.png")
+                i_want_pizza.rect = img.get_rect()
+                i_want_pizza.rect.x = routes[interval.taskId - 1][-1][0]
+                i_want_pizza.rect.y = routes[interval.taskId - 1][-1][1]
+                i_want_pizza.image = img
+                self._last_order = i_want_pizza
+                self._orders.add(i_want_pizza)
             if interval.startTime < self.clock < interval.endTime and interval.taskId - 1 != self._current_customer\
                     and interval.taskId - 1 not in self._finished_jobs and interval.taskId != 0:
                 self._current_customer = interval.taskId - 1
@@ -174,15 +186,7 @@ class Window(object):
                 self._car.target_y = routes[self._current_customer][0][1]
                 self._car.rotate_on_target = routes[self._current_customer][1]
                 self._car.target_reached = False
-                self._car.speed = time_multiplier * route_length(routes[self._current_customer]) / self.schedule.taskSet.tasks[interval.taskId].wcet
-                i_want_pizza = pygame.sprite.Sprite()
-                img = pygame.image.load("thought_bubble.png")
-                i_want_pizza.rect = img.get_rect()
-                i_want_pizza.rect.x = routes[self._current_customer][-1][0]
-                i_want_pizza.rect.y = routes[self._current_customer][-1][1]
-                i_want_pizza.image = img
-                self._last_order = i_want_pizza
-                self._orders.add(i_want_pizza)
+                self._car.speed = route_length(routes[self._current_customer]) / self.schedule.taskSet.tasks[interval.taskId].wcet
                 self._finished_current_job = False
         self.last_time = current_time
         self._update_car()
@@ -190,6 +194,11 @@ class Window(object):
         self._car.update()
         self._sprites.draw(self._display)
         self._orders.draw(self._display)
+        text = self.font.render("%s" % self.clock, True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_rect.x = 10
+        text_rect.y = 10
+        self._display.blit(text, text_rect)
         pygame.display.flip()
 
     def cleanup(self):

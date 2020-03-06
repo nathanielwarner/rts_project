@@ -146,7 +146,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         file_path = sys.argv[1]
     else:
-        file_path = "tasksets/hwp1_test1.json"
+        file_path = "tasksets/test1.json"
 
     with open(file_path) as json_data:
         data = json.load(json_data)
