@@ -22,6 +22,12 @@
             "wcet": 1,
             "deadline": 2,
             "offset": 4
+        },
+        {
+            "taskId": 4,
+            "period": -1,
+            "wcet": 3,
+            "deadline": 5
         }
     ],
     "releaseTimes": [
@@ -36,6 +42,10 @@
         {
             "timeInstant": 4,
             "taskId": 3
+        },
+        {
+            "timeInstant": 5,
+            "taskId": 4
         }
     ],
     "scheduleOutput":

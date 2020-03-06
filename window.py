@@ -35,6 +35,13 @@ routes = [
 ]
 
 
+def route_length(route):
+    length = 0
+    for i in range(0, len(route) - 2, 2):
+        length += abs(route[i + 2][0] - route[i][0]) + abs(route[i + 2][1] - route[i][1])
+    return 2 * length + 1000
+
+
 class Car(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -57,7 +64,7 @@ class Car(pygame.sprite.Sprite):
         self.target_y = None
         self.rotate_on_target = None
 
-        self.target_reached = False
+        self.target_reached = True
 
         self.speed = 0.2
         self._last_time = pygame.time.get_ticks()
@@ -95,25 +102,29 @@ class Car(pygame.sprite.Sprite):
         self.rect.y = self.y
 
 
+time_multiplier = 0.0002
+
+
 class Window(object):
     def __init__(self):
         pygame.init()
         self._display = pygame.display.set_mode((900, 675), pygame.HWSURFACE)
         self._background = pygame.image.load("background.jpg").convert()
         self._car = Car()
-        self._car.target_x = routes[0][0][0]
-        self._car.target_y = routes[0][0][1]
-        self._car.rotate_on_target = routes[0][1]
+        self._car.target_x = 735.0
+        self._car.target_y = 180.0
+        self._car.rotate_on_target = 0.0
         self._sprites = pygame.sprite.Group()
         self._sprites.add(self._car)
         self._current_customer = -1
+        self._finished_jobs = []
         self._progress = 0
         self._going_back = False
         self._should_exit = False
 
     def _update_car(self):
         if self._current_customer != -1:
-            if self._car.target_reached:
+            if self._car.target_reached and not self._finished_current_job:
                 self._car.target_reached = False
                 if self._going_back:
                     self._progress -= 2
@@ -122,6 +133,8 @@ class Window(object):
                         self._car.target_y = self._car.store_y
                         self._car.rotate_on_target = 180
                         self._going_back = False
+                        self._finished_jobs.append(self._current_customer)
+                        self._finished_current_job = True
                     else:
                         self._car.target_x = routes[self._current_customer][self._progress][0]
                         self._car.target_y = routes[self._current_customer][self._progress][1]
@@ -144,11 +157,21 @@ class Window(object):
 
     def loop(self):
         current_time = pygame.time.get_ticks()
-        self.clock += (current_time - self.last_time) * 0.001
+        self.clock += (current_time - self.last_time) * time_multiplier
         for interval in self.schedule.intervals:
-            # print("%s %s %s" % (interval.startTime, self.clock, interval.endTime))
-            if interval.startTime < self.clock < interval.endTime:
+            if interval.startTime < self.clock < interval.endTime and interval.taskId - 1 != self._current_customer\
+                    and interval.taskId - 1 not in self._finished_jobs and interval.taskId != 0:
                 self._current_customer = interval.taskId - 1
+                self._progress = 0
+                self._car.x = 735.0
+                self._car.y = 180.0
+                self._car.rect.x = 735.0
+                self._car.rect.y = 180.0
+                self._car.target_x = routes[self._current_customer][0][0]
+                self._car.target_y = routes[self._current_customer][0][1]
+                self._car.rotate_on_target = routes[self._current_customer][1]
+                self._car.target_reached = False
+                self._car.speed = time_multiplier * route_length(routes[self._current_customer]) / self.schedule.taskSet.tasks[interval.taskId].wcet
                 i_want_pizza = pygame.sprite.Sprite()
                 img = pygame.image.load("thought_bubble.png")
                 i_want_pizza.rect = img.get_rect()
@@ -156,6 +179,7 @@ class Window(object):
                 i_want_pizza.rect.y = routes[self._current_customer][-1][1]
                 i_want_pizza.image = img
                 self._sprites.add(i_want_pizza)
+                self._finished_current_job = False
         self.last_time = current_time
         self._update_car()
         self._display.blit(self._background, (0, 0))
