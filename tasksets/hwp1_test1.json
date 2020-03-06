@@ -47,42 +47,5 @@
             "timeInstant": 5,
             "taskId": 4
         }
-    ],
-    "scheduleOutput":
-    {
-        "startTime": 0,
-        "endTime": 6,
-        "intervals": [
-            {
-                "timeInstant": 0,
-                "taskId": 0,
-                "jobId": -1,
-                "didPreempt": false
-            },
-            {
-                "timeInstant": 1,
-                "taskId": 1,
-                "jobId": 1,
-                "didPreempt": false
-            },
-            {
-                "timeInstant": 2,
-                "taskId": 2,
-                "jobId": 1,
-                "didPreempt": false
-            },
-            {
-                "timeInstant": 4,
-                "taskId": 3,
-                "jobId": 1,
-                "didPreempt": false
-            },
-            {
-                "timeInstant": 5,
-                "taskId": 0,
-                "jobId": -1,
-                "didPreempt": false
-            }
-        ]
-    }
+    ]
 }

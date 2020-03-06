@@ -116,6 +116,8 @@ class Window(object):
         self._car.rotate_on_target = 0.0
         self._sprites = pygame.sprite.Group()
         self._sprites.add(self._car)
+        self._orders = pygame.sprite.Group()
+        self._last_order = None
         self._current_customer = -1
         self._finished_jobs = []
         self._progress = 0
@@ -147,6 +149,7 @@ class Window(object):
                         self._car.target_x = routes[self._current_customer][self._progress][0]
                         self._car.target_y = routes[self._current_customer][self._progress][1]
                         self._car.rotate_on_target = - routes[self._current_customer][self._progress + 1]
+                        self._orders.remove(self._last_order)
                     else:
                         self._car.target_x = routes[self._current_customer][self._progress][0]
                         self._car.target_y = routes[self._current_customer][self._progress][1]
@@ -178,13 +181,15 @@ class Window(object):
                 i_want_pizza.rect.x = routes[self._current_customer][-1][0]
                 i_want_pizza.rect.y = routes[self._current_customer][-1][1]
                 i_want_pizza.image = img
-                self._sprites.add(i_want_pizza)
+                self._last_order = i_want_pizza
+                self._orders.add(i_want_pizza)
                 self._finished_current_job = False
         self.last_time = current_time
         self._update_car()
         self._display.blit(self._background, (0, 0))
         self._car.update()
         self._sprites.draw(self._display)
+        self._orders.draw(self._display)
         pygame.display.flip()
 
     def cleanup(self):
