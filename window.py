@@ -36,9 +36,9 @@ routes = [
 
 
 def route_length(route):
-    length = abs(route[0][0] - 735.0) + abs(route[0][1] - 180.0)
+    length = abs(route[0][0] - 735.0) + abs(route[0][1] - 180.0) + 12
     for i in range(0, len(route) - 2, 2):
-        length += abs(route[i + 2][0] - route[i][0]) + abs(route[i + 2][1] - route[i][1]) + 10
+        length += abs(route[i + 2][0] - route[i][0]) + abs(route[i + 2][1] - route[i][1]) + 12
     return 2 * length
 
 
